@@ -3,11 +3,11 @@ package com.agfa.he.sh.cris.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 import com.agfa.he.sh.cris.domain.MasterPatient;
 
-public interface MasterPatientRepository extends Repository<MasterPatient, String>{
+public interface MasterPatientRepository extends CrudRepository<MasterPatient, String>{
 
 	@Query("select t from MasterPatient t")
 	Page<MasterPatient> listPatients(Pageable pageable);

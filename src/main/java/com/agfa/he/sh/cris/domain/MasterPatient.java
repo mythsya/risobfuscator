@@ -6,9 +6,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+
 
 @Entity
 @Table(name="role_patient")
@@ -39,6 +44,11 @@ public class MasterPatient implements Serializable{
 	
 	@Column(name = "idnumbertype_id")
 	private String idNumberType;
+	
+	@ManyToOne
+	@Fetch(FetchMode.JOIN)
+	@JoinColumn(name = "administrativegendercode_id")
+	private BaseData sex;
 
 	public String getId() {
 		return id;
@@ -94,5 +104,13 @@ public class MasterPatient implements Serializable{
 
 	public void setIdNumberType(String idNumberType) {
 		this.idNumberType = idNumberType;
+	}
+
+	public BaseData getSex() {
+		return sex;
+	}
+
+	public void setSex(BaseData sex) {
+		this.sex = sex;
 	}
 }

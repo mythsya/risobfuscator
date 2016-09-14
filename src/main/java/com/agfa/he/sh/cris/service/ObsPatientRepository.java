@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 import com.agfa.he.sh.cris.domain.EmbeddableBaseData;
 import com.agfa.he.sh.cris.domain.ObsPatient;
 
-public interface ObsPatientRepository extends Repository<ObsPatient, String> {
+public interface ObsPatientRepository extends CrudRepository<ObsPatient, String> {
 	
 	@Query("select p from ObsPatient p where p.patientId = ?1 ")
 	List<ObsPatient> findPatientsByPid(String pid);

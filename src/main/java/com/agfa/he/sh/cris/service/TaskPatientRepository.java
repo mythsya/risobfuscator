@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.CrudRepository;
 
 import com.agfa.he.sh.cris.domain.ObsPatient;
 import com.agfa.he.sh.cris.domain.TaskPatient;
 
-public interface TaskPatientRepository extends Repository<TaskPatient, String> {
+public interface TaskPatientRepository extends CrudRepository<TaskPatient, String> {
 
 	@Query("select p from TaskPatient p where p.patientId = ?1 ")
 	List<ObsPatient> findPatientsByPid(String pid);
