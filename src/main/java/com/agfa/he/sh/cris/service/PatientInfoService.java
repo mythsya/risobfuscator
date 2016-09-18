@@ -5,4 +5,6 @@ import com.agfa.he.sh.cris.domain.MasterPatient;
 public interface PatientInfoService {
 
 	void obfuscatePatientInfo(MasterPatient p);
+	
+	void bulkObfuscatePatientInfo(int start, int size);
 }
