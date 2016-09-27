@@ -1,5 +1,7 @@
 package com.agfa.he.sh.cris.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -60,29 +62,24 @@ public class PatientInfoServiceImpl implements PatientInfoService{
 		
 		taskPatientRepository.bulkUpdatePatientByPid(p.getId(), newName, newPy, newPhone, null, null);
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("Succeeded to update patient info. [patient id="+p.getId()+"]");
+		if (logger.isInfoEnabled()) {
+			logger.info("Succeeded to update patient info. [patient id="+p.getId()+"] => { name="+newName+", pinyin="+newPy+", phone="+newPhone+" }");
 		}
 	}
 
 
 	@Override
-	public void bulkObfuscatePatientInfo(int start, int size) {
-		Sort sort =  new Sort(Direction.ASC, "id");
-		Pageable pageable = new PageRequest(start, size, sort);
-		Page<MasterPatient> patients = masterPatientRepository.listPatients(pageable);
-		
-		if (patients != null ) {
-			int count = patients.getNumberOfElements();
-			if (logger.isInfoEnabled()) {
-				logger.info(count+" patients retrieved ["+start+" -> "+(start+size)+"]");
-			}
-			
-			for(MasterPatient mp : patients) {
-				this.obfuscatePatientInfo(mp);
-			}
-		}
-
+	public int countMasterPatient() {
+		return masterPatientRepository.countMasterPatient();
 	}
+
+
+	@Override
+	public List<MasterPatient> queryPatientByRange(int start, int end) {		
+		return masterPatientRepository.queryPatientByRange(start, end);
+	}
+
+
+	
 
 }
