@@ -35,16 +35,16 @@ public class JobController {
 	
 	@RequestMapping("/job/stop")
 	public String stop() {
-		return "OK";
+		return jobContainer.stop();
 	}
 	
 	@RequestMapping("/job/status")
 	public String status() {
-		return "OK";
+		return jobContainer.status();
 	}
 	
 	@RequestMapping("/job/cancel")
 	public String cancel() {
-		return "OK";
+		return jobContainer.cancel();
 	}
 }

@@ -223,6 +223,7 @@ public class JobContainer {
 			
 			try {
 				for(MasterPatient p : patients) {
+					patientInfoService.obfuscatePatientInfo(p);
 					processed ++;
 				}
 			} catch(Exception e) {
@@ -251,6 +252,8 @@ public class JobContainer {
 			saveJobDetail(index, jobDetail);
 			
 			synchronized(lock) {
+				saveJobStatus(JobStatus.RUNNING);
+				
 				JobSummary summary = getJobSummary();
 				if (summary != null) {
 					summary.setStatus(JobStatus.RUNNING);
@@ -260,6 +263,8 @@ public class JobContainer {
 					if (summary.getRemains() <= 0) {
 						summary.setEndAt(DateUtil.getTimestampCurrent());
 						summary.setStatus(JobStatus.STOP);
+						
+						saveJobStatus(JobStatus.STOP);
 					}
 					
 					saveJobSummary(summary);
@@ -285,17 +290,6 @@ public class JobContainer {
 	private final Object lock = new Object();
 	
 	private final ConcurrentHashMap<String,ScheduledFuture<?>> futures = new ConcurrentHashMap<String,ScheduledFuture<?>>();
-	
-//	public static void main(String[] args) {
-//		JobDetail jd = new JobDetail();
-//		jd.setStartAt(DateUtil.getTimestampCurrent());
-//		String str = JacksonUtil.toJson(jd);
-//		JobDetail jd2 = JacksonUtil.readValue(str, JobDetail.class);		
-//		System.out.println(str);
-//		
-//		System.out.println(JacksonUtil.toJson(jd2));
-//	}
-	
 
 	public void init() {
 		if (logger.isInfoEnabled()) {
@@ -387,7 +381,7 @@ public class JobContainer {
 			futures.clear();
 			
 			for(int i=0; i<jobCount; i++) {
-				ScheduledFuture<?> f =scheduler.scheduleAtFixedRate(new WorkerThread("job-thread-"+(i+1), scheduler, jobDetails[i], i+1), 1000, 1000, TimeUnit.MILLISECONDS);
+				ScheduledFuture<?> f =scheduler.scheduleAtFixedRate(new WorkerThread("job-thread-"+(i+1), scheduler, jobDetails[i], i+1), 1000, 2000, TimeUnit.MILLISECONDS);
 				futures.put(String.valueOf(i+1), f);
 			}
 			
@@ -398,17 +392,55 @@ public class JobContainer {
 	}
 	
 	public String stop() {
+		//attemp to stop all scheduled jobs
+		for(Entry<String, ScheduledFuture<?>> entry : futures.entrySet()) {
+			entry.getValue().cancel(true);
+		}
+		
+		synchronized(lock) {
+			saveJobStatus(JobStatus.STOP);
+			
+			JobSummary summary = getJobSummary();
+			if (summary != null) {
+				summary.setStatus(JobStatus.STOP);				
+				
+				saveJobSummary(summary);
+			}
+		}
+		
 		scheduled.set(false);
-		return null;
+		
+		return getValue(AppConstants.KEY_JOB_RUNTIME_SUMMARY);
 	}
 	
 	public String cancel() {
+		//attemp to stop all scheduled jobs
+		for(Entry<String, ScheduledFuture<?>> entry : futures.entrySet()) {
+			entry.getValue().cancel(true);
+		}
+		
+		//clear runtime context
+		clearRuntimeContext();
+		
+		synchronized(lock) {
+			saveJobStatus(JobStatus.CANCELLED);
+			
+			JobSummary summary = getJobSummary();
+			if (summary != null) {
+				summary.setStatus(JobStatus.CANCELLED);
+				summary.setEndAt(DateUtil.getTimestampCurrent());
+				
+				saveJobSummary(summary);
+			}
+		}
+		
 		scheduled.set(false);
-		return null;
+		
+		return getValue(AppConstants.KEY_JOB_RUNTIME_SUMMARY);
 	}
 	
 	public String status() {
-		return null;
+		return getValue(AppConstants.KEY_JOB_RUNTIME_SUMMARY);
 	}
 	
 	private void clearRuntimeContext() {
