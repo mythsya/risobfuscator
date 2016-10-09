@@ -275,12 +275,16 @@ public class JobContainer {
 
 	private final static Logger logger = LoggerFactory.getLogger(JobContainer.class);
 	
+	private final int batchFetchSize = 500; 
+	
 	private final int availableProcessors = Runtime.getRuntime().availableProcessors();
 	
 	private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(availableProcessors*2, new DefaultThreadFactory());
 	
-	@Autowired
-	private StringRedisTemplate stringRedisTemplate;
+	//@Autowired
+	//private StringRedisTemplate stringRedisTemplate;
+	
+	private final ConcurrentHashMap<String, String> stringValueCache = new ConcurrentHashMap<String,String>();
 	
 	@Autowired
 	private PatientInfoService patientInfoService;
@@ -353,7 +357,7 @@ public class JobContainer {
 					jd.setStart(1+(avgCountPerJob*i));
 					jd.setTo(jd.getStart()+total-1);
 					jd.setCurrentPosition(jd.getStart());
-					jd.setCurrentStep(100);
+					jd.setCurrentStep(batchFetchSize);
 					jobDetails[i] = jd;
 					
 					saveJobDetail(i+1, jd);
@@ -512,21 +516,25 @@ public class JobContainer {
 	}
 	
 	private boolean isKeyExists(String key) {
-		return stringRedisTemplate.hasKey(key);
+		//return stringRedisTemplate.hasKey(key);
+		return stringValueCache.containsKey(key);
 	}
 	
 	private void setKeyValue(String key, String val) {
 		if (key!=null && !key.isEmpty() && val != null && !val.isEmpty()) {
-			stringRedisTemplate.opsForValue().set(key, val);
+			//stringRedisTemplate.opsForValue().set(key, val);
+			stringValueCache.put(key,val);
 		}
 	}
 	
 	private String getValue(String key) {
-		return stringRedisTemplate.opsForValue().get(key);
+		//return stringRedisTemplate.opsForValue().get(key);
+		return stringValueCache.get(key);
 	}
 	
 	private void removeKey(String key) {
-		stringRedisTemplate.delete(key);
+		//stringRedisTemplate.delete(key);
+		stringValueCache.remove(key);
 	}
 	
 }
